@@ -37,7 +37,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        return self.capacity
+        return len(self.data)
 
 
     def get_load_factor(self):
@@ -47,12 +47,12 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        return self.count / self.capacity
+        return self.count / len(self.data)
 
 
 
     def __str__(self):
-        return f'There are {self.count} values in the Hash Table. The load capacity is {self.get_load_factor()}'
+        return f'There are {self.count} values in the Hash Table. The capacity is: {self.capacity} & The load capacity is {self.get_load_factor()}'
 
 
 
@@ -62,10 +62,6 @@ class HashTable:
 
         Implement this, and/or DJB2.
         """
-
-        # Your code here
-        # length = len(self.data)
-        # return hash(key) % length
 
 
     def djb2(self, key):
@@ -135,20 +131,41 @@ class HashTable:
         Implement this.
         """
         index = self.hash_index(key)
-        node = self.data[index]
-        # print("Key:", node.key, "Value:", node.value)
-        prev = node
-        while node is not None and node.key != key:
-            prev = node
-            node = node.next
-        if node is None:
-            return None
+
+        current_entry = self.data[index]
+        last_entry = None
+
+        while current_entry is not None and current_entry.key != key:
+            last_entry = current_entry
+            current_entry = last_entry.next
+
+        if current_entry is None:
+            print("ERROR: Unable to remove entry with key " + key)
         else:
-            if prev is None:
-                return None
+            if last_entry is None:  # Removing the first element in the LL
+                self.data[index] = current_entry.next
             else:
-                self.data[index] = None
-                self.count -= 1
+                last_entry.next = current_entry.next
+
+
+        # index = self.hash_index(key)
+        # node = self.data[index]
+        # # print("Key:", node.key, "Value:", node.value)
+        # prev = node
+        # while node is not None and node.key != key:
+        #     prev = node
+        #     node = node.next
+        # if node is None:
+        #     return None
+        # else:
+        #     # if prev is None:
+        #     #     self.data[index] = node.next
+        #     if node.next is not None:
+        #         prev.next = node.next
+        #         self.count -= 1
+        #     else:
+        #         prev.next = None
+        #         self.count -= 1
 
 
     def get(self, key):
@@ -199,15 +216,19 @@ class HashTable:
             curr = self.data[x]
             if curr is None:
                 return
-            new_arr[x] = HashTableEntry(self.data[x].key, self.data[x].value)
+            new_arr[x] = HashTableEntry(curr.key, curr.value)
+            # new_arr.put(curr.key, curr.value)
             while curr.next is not None:
                 prev = curr
                 new_arr[x].next = HashTableEntry(prev.next.key, prev.next.value)
                 curr = curr.next
 
+        # print(len(new_arr))
+        # self.capacity = new_capacity
+
         self.data = new_arr
 
-        print(len(self.data))
+        # print(len(self.data))
 
         # new_array = [None] * new_capacity
 
@@ -245,6 +266,7 @@ if __name__ == "__main__":
     ht.put("line_12", "And stood awhile in thought.")
 
     # ht.resize(1024)
+    # print(ht.get_num_slots())
     print(ht.__str__())
     print("")
 
@@ -255,9 +277,9 @@ if __name__ == "__main__":
     # Test resizing
     old_capacity = ht.get_num_slots()
     ht.resize(ht.capacity * 2)
-    new_capacity = ht.get_num_slots()
+    new_capacity1 = ht.get_num_slots()
 
-    print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+    print(f"\nResized from {old_capacity} to {new_capacity1}.\n")
 
     # Test if data intact after resizing
     for i in range(1, 13):
