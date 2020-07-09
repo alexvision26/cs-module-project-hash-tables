@@ -21,7 +21,9 @@ class HashTable:
     """
 
     def __init__(self, capacity):
-        # Your code here
+        self.capacity = capacity
+        self.data = [None] * self.capacity
+        self.count = 0
 
 
     def get_num_slots(self):
@@ -35,6 +37,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return len(self.data)
 
 
     def get_load_factor(self):
@@ -44,6 +47,13 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return self.count / len(self.data)
+
+
+
+    def __str__(self):
+        return f'There are {self.count} values in the Hash Table. The capacity is: {self.capacity} & The load capacity is {self.get_load_factor()}'
+
 
 
     def fnv1(self, key):
@@ -53,8 +63,6 @@ class HashTable:
         Implement this, and/or DJB2.
         """
 
-        # Your code here
-
 
     def djb2(self, key):
         """
@@ -62,7 +70,10 @@ class HashTable:
 
         Implement this, and/or FNV-1.
         """
-        # Your code here
+        hash = 5381
+        for x in key:
+            hash = ( hash * 33) + ord(x)
+        return hash & 0xFFFFFFFF
 
 
     def hash_index(self, key):
@@ -81,7 +92,34 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        index = self.hash_index(key)
+        node = self.data[index]
+
+        if node is None:
+            self.count += 1
+            self.data[index] = HashTableEntry(key, value)
+            return
+        if node.key == key:
+            self.count += 1
+            self.data[index] = HashTableEntry(key, value)
+            return
+        prev = node
+        while node is not None:
+            prev = node
+            node = node.next
+        self.count += 1
+        prev.next = HashTableEntry(key, value)
+
+        # if node is not None:
+        #     # print('Collision, overwriting the entry!')
+        #     prev = node
+        #     while node.next is not None:
+        #         prev = node
+        #         node = node.next
+        #     prev.next = HashTableEntry(key, value)
+        #     return
+        # else:
+        #     self.data[index] = HashTableEntry(key, value)
 
 
     def delete(self, key):
@@ -92,7 +130,42 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        index = self.hash_index(key)
+
+        current_entry = self.data[index]
+        last_entry = None
+
+        while current_entry is not None and current_entry.key != key:
+            last_entry = current_entry
+            current_entry = last_entry.next
+
+        if current_entry is None:
+            print("ERROR: Unable to remove entry with key " + key)
+        else:
+            if last_entry is None:  # Removing the first element in the LL
+                self.data[index] = current_entry.next
+            else:
+                last_entry.next = current_entry.next
+
+
+        # index = self.hash_index(key)
+        # node = self.data[index]
+        # # print("Key:", node.key, "Value:", node.value)
+        # prev = node
+        # while node is not None and node.key != key:
+        #     prev = node
+        #     node = node.next
+        # if node is None:
+        #     return None
+        # else:
+        #     # if prev is None:
+        #     #     self.data[index] = node.next
+        #     if node.next is not None:
+        #         prev.next = node.next
+        #         self.count -= 1
+        #     else:
+        #         prev.next = None
+        #         self.count -= 1
 
 
     def get(self, key):
@@ -103,7 +176,26 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+
+        index = self.hash_index(key)
+        node = self.data[index]
+
+        while node is not None and node.key != key:
+            node = node.next
+        if node is None:
+            return None
+        else:
+            return node.value
+
+        # while node is not None and node.key != key:
+        #     node = node.next
+        # if node is None:
+        #     return None
+        # else:
+        #     # while node.next is not None and node.key != key:
+        #     #     prev = node
+        #     #     node = node.next
+        #     return node.value
 
 
     def resize(self, new_capacity):
@@ -113,7 +205,47 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        # load_factor = self.get_load_factor()
+
+        # if load_factor > .7:
+        #     self.capacity * 2
+
+        new_arr = [None] * new_capacity
+
+        for x in range(len(self.data)):
+            curr = self.data[x]
+            if curr is None:
+                return
+            new_arr[x] = HashTableEntry(curr.key, curr.value)
+            # new_arr.put(curr.key, curr.value)
+            while curr.next is not None:
+                prev = curr
+                new_arr[x].next = HashTableEntry(prev.next.key, prev.next.value)
+                curr = curr.next
+
+        # print(len(new_arr))
+        # self.capacity = new_capacity
+
+        self.data = new_arr
+
+        # print(len(self.data))
+
+        # new_array = [None] * new_capacity
+
+        # for x in range(len(self.data)):
+        #     curr = self.data[x]
+        #     prev = curr
+        #     new_array[x] = HashTableEntry(self.data[x].key, self.data[x].value)
+        #     while self.data[x].next is not None:
+        #         # curr = self.data[x]
+        #         prev = curr
+        #         curr = curr.next
+        #     new_array[x].next = prev
+
+
+        # self.data = new_array
+
+        # # print(len(self.data))
 
 
 
@@ -133,6 +265,9 @@ if __name__ == "__main__":
     ht.put("line_11", "So rested he by the Tumtum tree")
     ht.put("line_12", "And stood awhile in thought.")
 
+    # ht.resize(1024)
+    # print(ht.get_num_slots())
+    print(ht.__str__())
     print("")
 
     # Test storing beyond capacity
@@ -142,9 +277,9 @@ if __name__ == "__main__":
     # Test resizing
     old_capacity = ht.get_num_slots()
     ht.resize(ht.capacity * 2)
-    new_capacity = ht.get_num_slots()
+    new_capacity1 = ht.get_num_slots()
 
-    print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+    print(f"\nResized from {old_capacity} to {new_capacity1}.\n")
 
     # Test if data intact after resizing
     for i in range(1, 13):

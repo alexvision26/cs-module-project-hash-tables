@@ -1,8 +1,25 @@
-# Your code here
+import math
 
+# def calc(x, y, z):
+#     if x <= 0: y + z
+#     if x >  0: exps(x-1,y+1,z) + calc(x-2,y+2,z*2) + exps(x-3,y+3,z*3)
 
+cache = {}
 def expensive_seq(x, y, z):
     # Your code here
+
+    n = (x,y,z)
+
+    if x <= 0: return y + z
+
+    if n not in cache:
+        if x > 0: cache[n] = expensive_seq(x-1,y+1,z) + expensive_seq(x-2,y+2,z*2) + expensive_seq(x-3,y+3,z*3)
+    
+    return cache[n]
+
+    # if (x,y,z) not in tbl:
+    #     tbl[(x,y,z)] = 
+    # return tbl[(x,y,z)]
 
 
 
